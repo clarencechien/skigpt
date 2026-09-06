@@ -1,0 +1,8 @@
+node_modules/
+standalone/
+standalone-entry.tsx
+.wrangler/
+.worker-check/
+.env*
+.dev.vars*
+npm-debug.log*

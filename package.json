@@ -1,0 +1,34 @@
+{
+  "name": "skigpt",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "build": "node scripts/build-standalone.mjs",
+    "deploy": "wrangler deploy",
+    "dev": "npm run build && wrangler dev",
+    "test": "node --test tests/physics.test.mjs tests/motion.test.mjs && node tests/room-protocol.mjs",
+    "test:integration": "node tests/room-integration.mjs",
+    "check:deploy": "npm run build && wrangler deploy --dry-run --outdir .worker-check"
+  },
+  "dependencies": {
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "three": "0.185.1",
+    "qrcode": "1.5.4",
+    "lucide-react": "1.31.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.0",
+    "wrangler": "4.92.0",
+    "miniflare": "4.20260515.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@types/three": "0.185.4",
+    "@types/qrcode": "1.5.6",
+    "typescript": "5.9.3"
+  }
+}

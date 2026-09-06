@@ -1,0 +1,6 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {racer,step,course,BASE,LENGTH} from '../game/physics.mjs';
+test('course deterministic and has ramps',()=>{assert.deepEqual(course(77),course(77));assert.notDeepEqual(course(77),course(78));assert.ok(course(77).filter(o=>o.type==='ramp').length>30)});
+test('tapping reaches 2x but never exceeds it without ramp',()=>{let p=racer('a','a');for(let i=0;i<1000;i++)step(p,{tap:true,shake:true},.05,i*.05,[]);assert.equal(p.tier,2);assert.ok(p.speed<=BASE*2);assert.ok(p.speed>BASE*1.99)});
+test('one flip per ramp, nine tier cap',()=>{let p=racer('a','a');for(let i=0;i<15;i++){p.air=1.5;p.flipped=false;step(p,{shake:true},.05,i,[]);let t=p.tier;step(p,{shake:true},.05,i+.05,[]);assert.equal(p.tier,t)}assert.equal(p.tier,9)});
+test('ramp required and obstacle slows without losing tier',()=>{let p=racer('a','a');p.speed=22;p.tier=3;step(p,{tap:true},.05,1,[{id:1,s:.5,x:0,type:'ramp'}]);assert.ok(p.air>0);step(p,{shake:true},.05,1.05,[]);assert.equal(p.tier,4);p.air=0;p.s=0;p.speed=22;step(p,{tap:true},.05,1.1,[{id:2,s:.5,x:0,type:'rock'}]);assert.ok(p.speed<15);assert.equal(p.tier,4)});
+test('finish time is stable once recorded',()=>{let p=racer('a','a');p.s=LENGTH-.1;p.speed=100;step(p,{},.05,55,[]);assert.equal(p.finished,55);step(p,{},.05,60,[]);assert.equal(p.finished,55)});
