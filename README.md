@@ -15,7 +15,7 @@
 | Deploy command | `npx wrangler deploy` |
 | Node.js | `.node-version` 已指定 `22.16.0` |
 | Build output directory | 不需另外填；`wrangler.jsonc` 已指定 `standalone` |
-| Environment variables / secrets | 遊戲本身不需要 |
+| Runtime variables / secrets | 開房必填 `ACCESS_TEAM_DOMAIN`、`ACCESS_AUD`，見 v0.5 設定 |
 
 Cloudflare Builds 會依 package-lock.json 安裝依賴。`npm run build` 產生遊戲前端，`wrangler deploy` 同時上傳前端資產與 Worker，並依設定建立 `ROOMS` Durable Objects 綁定及首次 SQLite migration。Worker 名稱需與設定中的 `skigpt` 一致。
 
@@ -23,7 +23,7 @@ Cloudflare Builds 會依 package-lock.json 安裝依賴。`npm run build` 產生
 
 首次成功後，開啟 Dashboard 顯示的 workers.dev HTTPS 網址：
 
-1. 筆電按「筆電開房」。
+1. 完成下方 Cloudflare Access 設定，筆電按「Access 登入開房」，通過驗證後開房。
 2. 手機掃 QR Code，輸入暱稱並授權體感。
 3. 筆電按「全員出發」，四秒倒數後一起競速。
 4. 日後推送到 `main`，Cloudflare 自動重新建置與部署。
@@ -86,7 +86,7 @@ npm run deploy
 
 筆電開房後可查看每位玩家的 **ping RTT**（DO 發出 nonce，收到手機 pong 才計算，15 秒取樣一次）、線上人數、DO 物件 ID、比賽更新頻率、累計送出 JSON payload KB、收發訊息數、checkpoint 次數與下次 alarm。比賽中主控資訊最多每秒 2 次，玩家賽事保持 20 Hz。數字是此房間應用程式計數，會隨最近 checkpoint 恢復，並非 Cloudflare 帳單或平台 CPU 用量。
 
-**強制關房**按鈕使用房主 token 驗證的 POST `/api/rooms/ROOMID/close`：取消 alarm → 刪除儲存資料 → 傳送關房確認 → 關閉所有 WebSocket。HTTP 和 WebSocket 都會回報清理結果。非房主不能關房。房間的事件採序列化處理，避免關房和比賽 tick 同時修改狀態。
+**強制關房**按鈕使用房主 token 驗證的 POST `/host/api/rooms/ROOMID/close`（v0.5 起同時要求 Access）：取消 alarm → 刪除儲存資料 → 傳送關房確認 → 關閉所有 WebSocket。HTTP 和 WebSocket 都會回報清理結果。非房主不能關房。房間的事件採序列化處理，避免關房和比賽 tick 同時修改狀態。
 
 自動清理：
 
@@ -118,3 +118,55 @@ DO 不是需手動關機的 VM。房間清理會停止它的遊戲工作，不�
 個人越線後立即使用伺服器 `finished` 秒數，停止送出操作，顯示自己的結果；其他玩家還在比賽時只更新排行榜。單人也會固定顯示完賽時間。完賽者依固定秒數排序，不再因大家距離都等於 7.2 km 而顯示相同名次。
 
 驗證：16 項物理／感測器／顯示規則測試、DO 協定測試（真實後端程式搭配 mock runtime）與前端 bundle 建置。涵蓋關房取消 alarm、不再排程、空房／閒置／主控離線清理、ping 與權限、降低 checkpoint 頻率、個人成績固定。真實 Cloudflare 部署與手機畫質仍需實際驗證。
+
+
+## v0.5 開房者 Access、位置資訊、單人 AI
+
+### 必須先設定 Access 才能開房
+
+v0.5 採 fail-closed：設定未完成時顯示 503，未登入或 token 無效時回 401/403。一般玩家加入與單人練習仍為公開功能。程式不提供略過 Access 的 production 開關。
+
+1. 在 Cloudflare Zero Trust → Access controls → Applications 建立 **Self-hosted** 應用程式。
+2. 使用遊戲的實際 hostname，保護 **`/host` 與 `/host/*`**，涵蓋主控入口、開房 API、主控 WebSocket 與關房 API。請確認兩個路徑都被涵蓋。
+3. Allow policy 限制可開房的 email／群組，依你的名單設定；不可設為 Everyone 或 Bypass。
+4. 複製此應用程式的 Application Audience（AUD）Tag，並取得團隊 `xxx.cloudflareaccess.com` 網域。
+5. Worker `skigpt` → Settings → Variables and Secrets 新增下面兩項 **Runtime Secret**，再部署／重載。它們不是密碼，使用 Secret 類型是為了讓 Wrangler 後續 Git 部署保留 Dashboard 管理的值。不要只設在 Build variables。
+
+| 名稱 | 填入內容 |
+| --- | --- |
+| `ACCESS_TEAM_DOMAIN` | 你的 `xxx.cloudflareaccess.com`（可含 https://） |
+| `ACCESS_AUD` | 上一步複製的 Application Audience Tag |
+| `CF_ZONE_NAME`（選填，同樣可用 Runtime Secret） | 遊戲自訂網域所屬 DNS zone，例如 `example.com` |
+| `DO_LOCATION_HINT`（選填，同樣可用 Runtime Secret） | `apac` 或其他受支援地區；不填為 automatic |
+
+設定需在你的 Cloudflare 帳號完成；原始碼沒有預填虛構 Access 網域、AUD 或擅自指定允許登入的人。若目前 workers.dev 介面只提供保護整站的 Access 快捷設定，而你希望手機玩家免登入，請使用自訂網域建立上述路徑型應用程式，不要把整個遊戲網站套進同一個 Access 限制。
+
+首頁「Access 登入開房」先導向 `/host`，Access edge policy 負責登入流程；Worker 再使用 WebCrypto 驗證 RS256 簽章、issuer、audience、exp、nbf 與使用者身份。只檢查 header 存在並不算驗證。驗證通過後 UI 顯示房主 email，按開房即可。主控操作同時綁定 Access 的 sub 與房主 token，另一個已登入的人也不能接管你的房間。
+
+JWT 公鑰只從已設定的團隊 certs URL 取得，快取 5 分鐘。Access 到期會關閉主控連線；重新登入後才能再連線，房間仍遵守主控離線 60 秒清理規則。此版不支援無使用者 email 的 Access service token 開房。
+
+舊 `/api/rooms/.../create`、`/close` 及公開路徑的 `?host=` 皆被拒絕，避免繞過 `/host`。公開請求上的內部身份 headers 會被清除。舊版已開的房間沒有 Access owner，請在更新前結束並重開；新版本不把未驗證的舊房主自動升權。
+
+[Access 官方 JWT 驗證文件](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/)。
+
+### Zone / region 顯示的意義
+
+- hostname：開房所用遊戲網域。
+- DNS zone：你填入的 `CF_ZONE_NAME`，明確標示「設定值」；workers.dev 沒有你的自訂 DNS zone。
+- 開房入口機房：開房請求的 `request.cf.colo`，例如 TPE。
+- 開房端地區：開房請求的 country / region，屬於用戶位置，並非 DO 位置。
+- DO location hint：你設定的期望地區，只在物件首次定位時有效，不保證實際落點。
+- DO jurisdiction：從 `ctx.id.jurisdiction` 取得（若有），代表地區限制而不是實際機房。
+- DO 實際機房：沒有直接可用的實際 colo 查詢欄位，保留未知；不拿入口機房冒充。
+
+這些位置資訊在開房時記錄，只送給房主 dashboard。不要透過對外 probe 猜測機房位置。[Cloudflare DO data location](https://developers.cloudflare.com/durable-objects/reference/data-location/)。
+
+### 輕鬆 AI 陪跑
+
+集合區只有 **1 位線上真人玩家**（不含筆電主控）時，自動顯示 `小雪 · AI 陪跑`；第二位真人加入就移除 AI。開賽時固定名單，賽中不突然增加對手。AI 在同一個 DO 內使用相同 step 物理運算，走同一條賽道，所有手機看到同一個 AI。
+
+AI 起步延遲約 1.8 秒、間歇加速，巡航弱於持續點擊 2× 的真人；會漏掉大多數跳板、偶爾避障失誤，沒有傳送或追趕瞬移。真人尚未突破 2× 時 AI 也不超過 2×；真人解鎖更高段後 AI 最多到 3×。
+
+AI 沒有獨立 WebSocket，因此不顯示虛假的 ping，標示「AI · 同 DO」。真人全離開時，AI 不會讓空房繼續 20 Hz 工作，也不會延長清理期限。這可測試多人狀態廣播、畫面中的對手及排名，但不能取代兩台真手機的網路延遲測試。單人練習模式不連 DO，也不自動加入此 AI。
+
+驗證：21 項回歸測試，加上 DO 協定與 Worker 路由測試；涵蓋實際 RSA 簽章／偽造／錯誤 AUD／過期、公開路徑繞過拒絕、身份 header 清除、位置來源、AI 速度上限、AI 完賽及真人離場清理。Access edge policy、真實部署及跨手機效果仍需你的帳號實測。
