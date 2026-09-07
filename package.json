@@ -1,6 +1,6 @@
 {
   "name": "skigpt",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -10,7 +10,7 @@
     "build": "node scripts/build-standalone.mjs",
     "deploy": "wrangler deploy",
     "dev": "npm run build && wrangler dev",
-    "test": "node --test tests/physics.test.mjs tests/motion.test.mjs && node tests/room-protocol.mjs",
+    "test": "node --test tests/physics.test.mjs tests/motion.test.mjs tests/race-view.test.mjs && node tests/room-protocol.mjs",
     "test:integration": "node tests/room-integration.mjs",
     "check:deploy": "npm run build && wrangler deploy --dry-run --outdir .worker-check"
   },
