@@ -1,6 +1,6 @@
 {
   "name": "skigpt",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "private": true,
   "type": "module",
   "engines": {
@@ -10,25 +10,25 @@
     "build": "node scripts/build-standalone.mjs",
     "deploy": "wrangler deploy",
     "dev": "npm run build && wrangler dev",
-    "test": "node --test tests/physics.test.mjs tests/motion.test.mjs tests/race-view.test.mjs tests/access-ai.test.mjs tests/opponent-view.test.mjs && node tests/room-protocol.mjs && node tests/host-routing.mjs && node tests/security-high.mjs && node tests/security-medium.mjs",
+    "test": "node --test tests/physics.test.mjs tests/motion.test.mjs tests/race-view.test.mjs tests/access-ai.test.mjs tests/opponent-view.test.mjs && node tests/room-protocol.mjs && node tests/host-routing.mjs && node tests/security-high.mjs && node tests/security-medium.mjs && node tests/security-tickets.mjs",
     "test:integration": "node tests/room-integration.mjs",
     "check:deploy": "npm run build && wrangler deploy --dry-run --outdir .worker-check"
   },
   "dependencies": {
+    "lucide-react": "1.31.0",
+    "qrcode": "1.5.4",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "three": "0.185.1",
-    "qrcode": "1.5.4",
-    "lucide-react": "1.31.0"
+    "three": "0.185.1"
   },
   "devDependencies": {
-    "esbuild": "0.28.0",
-    "wrangler": "4.92.0",
-    "miniflare": "4.20260515.0",
+    "@types/qrcode": "1.5.6",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@types/three": "0.185.4",
-    "@types/qrcode": "1.5.6",
-    "typescript": "5.9.3"
+    "esbuild": "0.28.2",
+    "miniflare": "5.20260907.0-alpha",
+    "typescript": "5.9.3",
+    "wrangler": "4.129.1"
   }
 }

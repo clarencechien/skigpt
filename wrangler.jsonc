@@ -6,11 +6,7 @@
     "directory": "./standalone",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": [
-      "/api/*",
-      "/host",
-      "/host/*"
-    ]
+    "run_worker_first": ["/", "/index.html", "/api/*", "/host", "/host/*"]
   },
   "durable_objects": {
     "bindings": [

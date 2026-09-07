@@ -235,3 +235,15 @@ AI 沒有獨立 WebSocket，因此不顯示虛假的 ping，標示「AI · 同 D
 - 根因：最後一位玩家衝線時，DO 同一 tick 將 phase 設為 results；原本前端只在 race 分支複製 finished，導致最後一位的個人結果保留舊值，再由本機 elapsed 補上持續跳動的時間。
 - 所有 state 封包先透過 reconcileRace 套用伺服器個人成績，再決定畫面。resultView 與排行榜共用同一份伺服器玩家資料；結算 HUD 只隨 state 更新，動畫迴圈不再更新結算時間。缺少完賽成績顯示「未完賽」，沒有 elapsed fallback。單人結算亦使用同一結果投影；舊 WebSocket 訊息不再覆蓋現行連線。
 - 回歸：實際 Worker 程式的本機協定模擬讓兩人依序衝線，確認最後一筆直接 results 時，兩位個人成績都等於排行榜，15 秒後更新與重連仍固定。另測同時完賽、DNF、reset、單人成績。room-protocol、race-view 測試與 standalone build 通過；尚未進行手機實機驗收。
+
+
+## v0.6.6：依賴、headers 與一次性票券
+
+- 升級 esbuild 0.28.2、Wrangler 4.129.1 及其配套 Miniflare 5.20260907.0-alpha；lockfile 已更新。完整 npm audit 含開發依賴為 0 項已知告警，結果保存在 `security/audit-v0.6.6.json`。
+- 加入 CSP／防嵌入／nosniff／Referrer-Policy／Permissions-Policy，保留手機體感、QR Code 與動態樣式。首頁、主控與 API 由 Worker 補齊 headers；JS／CSS 不額外經 Worker，使用 build 生成的 `_headers`。
+- 加入與重連先以 JSON POST 交換 30 秒一次性票券，再用 WebSocket `?ticket=...`。長效 resume／房主 token 不再放入連線網址；房主兩階段均保留 Access 驗證。POST 和票券 URL 不應加入自訂 log。無新增 secret 或 binding 設定。
+- 部署後請所有手機重新整理再加入／重連，舊版長效憑證網址會被拒絕。現有 sessionStorage 的玩家 resume 可繼續使用。
+- `npm test`、standalone build、Wrangler dry-run 通過；真實 Workerd 測試在本機網路核准遭中止，未列為通過。整合測試入口已更新為 Miniflare 5 官方相容轉換 API。線上部署與手機實機驗收仍待完成。
+- 詳細威脅範圍、票券限制與未修待辦請見 `security_best_practices_report.md`。
+
+參考：[Cloudflare static headers](https://developers.cloudflare.com/workers/static-assets/headers/)。

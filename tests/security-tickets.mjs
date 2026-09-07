@@ -1,0 +1,27 @@
+import {reconcileRace,resultView} from '../game/race-view.mjs';
+import {build} from 'esbuild';import assert from 'node:assert/strict';
+const output=await build({entryPoints:['multiplayer/worker.mjs'],bundle:true,write:false,format:'cjs',external:['cloudflare:workers']});
+class Socket{constructor(){this.messages=[]}serializeAttachment(x){this.a=structuredClone(x)}deserializeAttachment(){return structuredClone(this.a)}send(x){this.messages.push(JSON.parse(x))}close(){this.closed=true}}
+class Pair{constructor(){this[0]=new Socket();this[1]=new Socket()}}
+class Resp{constructor(body,opts={}){Object.assign(this,{status:200,body},opts)}static json(x,opts={}){return new Resp(JSON.stringify(x),opts)}async json(){return JSON.parse(this.body)}}
+let module={exports:{}};new Function('require','module','exports','WebSocketPair','Response',output.outputFiles[0].text)(()=>({DurableObject:class{}}),module,module.exports,Pair,Resp);const {RaceRoom:Room,LIMITS}=module.exports;
+let now=1800000000000;const realNow=Date.now;Date.now=()=>now;
+async function setup(){const sockets=[],saved=new Map();let ready,alarmAt=null,writes=0;const ctx={id:{toString:()=> 'test-object'},storage:{get:async k=>saved.get(k),put:async(k,v)=>{writes++;saved.set(k,structuredClone(v))},setAlarm:async t=>alarmAt=t,deleteAlarm:async()=>alarmAt=null,deleteAll:async()=>saved.clear()},blockConcurrencyWhile:f=>ready=f(),acceptWebSocket:w=>sockets.push(w),getWebSockets:()=>sockets};const room=new Room(ctx,{});await ready;const request=(suffix,headers={})=>new Request('http://localhost/api/rooms/ABC123'+suffix,{headers:{'X-Skigpt-Owner':'host-sub','X-Skigpt-Email':'host@example.com','X-Skigpt-Access-Exp':String(Math.floor(now/1000)+3600),...headers}});let res=await room.fetch(request('/create'));const {token}=await res.json();await room.fetch(request('?host='+token,{Upgrade:'websocket'}));const host=sockets.at(-1);await room.fetch(request('?id=p1&name=Alice',{Upgrade:'websocket'}));const a=sockets.at(-1);await room.fetch(request('?id=p2&name=Bob',{Upgrade:'websocket'}));const b=sockets.at(-1);return {room,host,a,b,token,saved,ctx,sockets,request,alarm:()=>alarmAt,writes:()=>writes}}
+
+const mint=(t,body,host=false,extra={})=>t.room.fetch(new Request('http://localhost'+(host?'/host':'')+'/api/rooms/ABC123/ticket',{method:'POST',headers:{'Content-Type':'application/json','X-Skigpt-Owner':'host-sub',...extra},body:JSON.stringify(body)}));
+const redeem=(t,ticket,host=false,extra={})=>t.room.fetch(new Request('http://localhost'+(host?'/host':'')+'/api/rooms/ABC123?ticket='+ticket,{headers:{Upgrade:'websocket','X-Skigpt-Owner':'host-sub','X-Skigpt-Access-Exp':String(now/1000+3600),...extra}}));
+try{
+const t=await setup();let res=await mint(t,{id:'new',name:'New'});assert.equal(res.status,200);let ticket=(await res.json()).ticket;assert.ok(!JSON.stringify(t.saved.get('room')).includes(ticket),'only ticket hashes persisted');assert.equal((await redeem(t,ticket)).status,101);assert.equal((await redeem(t,ticket)).status,403,'one use');
+assert.equal((await mint(t,{id:'p1',name:'a',resume:'wrong'})).status,403);assert.equal((await mint(t,{id:'other',name:'a',host:t.token})).status,403,'public cannot mint host ticket');assert.equal((await mint(t,{id:'h',name:'h',host:t.token},true,{'X-Skigpt-Owner':'wrong'})).status,403);
+res=await mint(t,{id:'h',name:'h',host:t.token},true);ticket=(await res.json()).ticket;assert.equal((await redeem(t,ticket,true)).status,101,'valid Access subject and host ticket');
+res=await mint(t,{id:'p1',name:'a',resume:t.room.state.players.find(p=>p.id==='p1').resume});ticket=(await res.json()).ticket;now+=3000;assert.equal((await redeem(t,ticket)).status,101,'resume through POST');
+res=await mint(t,{id:'expiry',name:'a'});ticket=(await res.json()).ticket;now+=30000;assert.equal((await redeem(t,ticket)).status,403,'exact expiry');
+res=await mint(t,{id:'wrong-origin',name:'a'});ticket=(await res.json()).ticket;assert.equal((await t.room.fetch(new Request('http://other/api/rooms/ABC123?ticket='+ticket,{headers:{Upgrade:'websocket'}}))).status,403);
+res=await mint(t,{id:'h',name:'h',host:t.token},true);ticket=(await res.json()).ticket;assert.equal((await redeem(t,ticket)).status,403,'host ticket cannot be used on player path');
+assert.equal((await mint(t,{id:'bad',name:'x'.repeat(2000)})).status,400);assert.equal((await mint(t,null)).status,400);assert.equal((await mint(t,{id:'bad',name:'a',unknown:true})).status,400);
+// Fresh cohort exercises two requests per join without exhausting a single 32-token budget.
+const cohort=await setup();for(let i=0;i<14;i++){const response=await mint(cohort,{id:'n'+i,name:'n'});assert.equal(response.status,200);assert.equal((await redeem(cohort,(await response.json()).ticket)).status,101)}assert.equal(cohort.room.state.players.filter(p=>!p.ai).length,16);
+// Reconstruct from saved storage before redemption: tickets survive hibernation but remain single use.
+const resume=await setup();res=await mint(resume,{id:'restore',name:'r'});ticket=(await res.json()).ticket;const reloaded=new Room(resume.ctx,{});await new Promise(resolve=>setImmediate(resolve));resume.room=reloaded;assert.equal((await redeem(resume,ticket)).status,101);assert.equal((await redeem(resume,ticket)).status,403);
+console.log('PASS tickets: mint/redeem, replay, expiry, resume, host ownership/role, origin, bounded body, 16-player cohort and storage restore');
+}finally{Date.now=realNow}

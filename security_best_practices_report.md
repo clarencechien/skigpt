@@ -3,7 +3,17 @@
 日期：2026-09-07。審查基準：[clarencechien/skigpt @ 5c4d93e](https://github.com/clarencechien/skigpt/tree/5c4d93e9346bf1ec26dbbe52cb5c8821c34012aa)。
 
 
-## v0.6.3 修補狀態（2026-09-07，最新）
+## v0.6.6 修補狀態（2026-09-07，最新）
+
+- **06 依賴告警已處理**：esbuild 0.28.2、Wrangler 4.129.1、Miniflare 5.20260907.0-alpha，與 lockfile 同步。Miniflare 版本是穩定 Wrangler 官方指定的依賴；較舊的穩定 Miniflare 配套仍帶 sharp／undici 告警，因此沒有只為避開 alpha 名稱而保留已知告警，也沒有 audit fix --force 或任意 overrides。更新後完整 npm audit（含 dev）為 0 項已知告警；原始結果見 `security/audit-v0.6.6.json`。這不是不存在未知漏洞的保證。
+- **應用安全 headers 已補齊**：CSP 限制 script 為同源、禁止 object／base／外站嵌入；nosniff、DENY、no-referrer、Permissions-Policy。保留同源體感與 QR data 圖片、動態 inline style；未開放 inline script 或 unsafe-eval。首頁／主控與 API 經 Worker 加 header；JS／CSS 靜態資產使用 build 產出的 _headers。WebSocket connect-src 明確列出當前 hostname；不使用所有 wss 網域的通配允許。
+- **長效連線憑證不再放在公開 WebSocket URL**：`POST /api/rooms/:room/ticket` 接受玩家 id／name／resume；房主使用 `/host/api/rooms/:room/ticket`，仍需 Access subject + 房主 token。POST JSON 上限 1024 bytes，字段驗證、Origin 檢查及 edge／DO 限流。公開 WebSocket 僅接受 ticket query；舊 host／resume URL 拒絕。短票券有效 30 秒、限制 64 張未過期票券、持久化只存票券 SHA-256，消耗後先存檔再升級，綁定房間（DO）、origin 與房主身分／入口。票券及加入各自使用 2/s、burst 32 的 room bucket，避免正常 16 人的兩階段加入共用一個額度。票券回應與 API 不快取。
+- 短票券本身仍是 bearer credential，尚未使用且未過期時被他人取得仍有搶先兌換風險；這項修補縮短可利用時間並防重放，不代表 URL 可以任意公開。不得另行把 POST body、Authorization 或票券記錄到自訂 log。歷史存取紀錄中的舊憑證並不會被這次部署刪除。
+- 驗證：npm test 全部通過（25 項單元測試及 room-protocol／host-routing／security-high／security-medium／security-tickets）；standalone build、Wrangler 4.129.1 deploy --dry-run 通過。票券測試包括重放、精確到期、錯誤身分／入口／origin、超長與非法 body、resume、16 人兩階段加入及 storage restore；既有最後一名結算回歸持續通過。
+- 真實 Miniflare／Workerd 整合測試已改為新版官方 convertV4MiniflareOptions API 與票券流程，但執行時網路核准遭環境中止，未列通過。尚未驗證線上 Access／WAF、部署生效或 iOS／Android CSP 實機行為。
+- 部署後已開啟舊版本的手機需重新整理才能使用票券重連；仍可讀取原 sessionStorage resume，不要求重建玩家身分。房主踢人／鎖入場、全域成本預算與帳戶設定驗收仍未包含於本次。
+
+## v0.6.3 修補狀態（2026-09-07，歷史）
 
 - **04 離線名額：已修補並通過本機回歸**。等待室離線保留 30 秒，alarm 與加入路徑回收並持久化；AI 排除於 16 真人上限之外。重連取消回收、舊 close 不影響新 socket。心跳失聯於 stale 判定後開始保留期。賽中／結果資料保留，reset 回等待室套用相同政策。
 - **05 替代入口：程式與部署設定已修補，線上生效待確認**。Wrangler 停用 workers.dev 與 Preview URLs；Worker 對 `.workers.dev` 後端請求在任何 binding 前回 403。既有 Dashboard Custom Domain 不在此次修改範圍。靜態資產可能由 assets 直接服務，因此全站入口停用仍以部署設定生效為準。
