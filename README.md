@@ -228,3 +228,10 @@ AI 沒有獨立 WebSocket，因此不顯示虛假的 ping，標示「AI · 同 D
 - 驗證：24 項單元測試與 standalone build 通過。執行環境未安裝 Playwright 瀏覽器，沒有宣稱 iOS／Android 實機或瀏覽器互動驗收已通過。部署後請用手機測試連點、雙手同時加速／轉向、長按／滑出按鈕，以及低畫質單人與多人比較。
 
 參考：[MDN user-select](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/user-select)、[Three.js 高 DPI 畫布成本](https://threejs.org/manual/en/responsive.html)。
+
+
+## v0.6.5：統一結算資料來源
+
+- 根因：最後一位玩家衝線時，DO 同一 tick 將 phase 設為 results；原本前端只在 race 分支複製 finished，導致最後一位的個人結果保留舊值，再由本機 elapsed 補上持續跳動的時間。
+- 所有 state 封包先透過 reconcileRace 套用伺服器個人成績，再決定畫面。resultView 與排行榜共用同一份伺服器玩家資料；結算 HUD 只隨 state 更新，動畫迴圈不再更新結算時間。缺少完賽成績顯示「未完賽」，沒有 elapsed fallback。單人結算亦使用同一結果投影；舊 WebSocket 訊息不再覆蓋現行連線。
+- 回歸：實際 Worker 程式的本機協定模擬讓兩人依序衝線，確認最後一筆直接 results 時，兩位個人成績都等於排行榜，15 秒後更新與重連仍固定。另測同時完賽、DNF、reset、單人成績。room-protocol、race-view 測試與 standalone build 通過；尚未進行手機實機驗收。
