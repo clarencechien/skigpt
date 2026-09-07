@@ -1,1 +1,1 @@
-export const QUALITY={low:{label:'低',segments:5,layers:3,flakes:0,debris:18,pixelRatio:1.5,shadows:false},medium:{label:'中',segments:9,layers:5,flakes:300,debris:48,pixelRatio:1.75,shadows:false},high:{label:'高',segments:14,layers:8,flakes:1000,debris:110,pixelRatio:2,shadows:true}};
+export const QUALITY={low:{label:'低',segments:5,layers:3,flakes:0,debris:18,pixelRatio:1,shadows:false},medium:{label:'中',segments:9,layers:5,flakes:300,debris:48,pixelRatio:1.75,shadows:false},high:{label:'高',segments:14,layers:8,flakes:1000,debris:110,pixelRatio:2,shadows:true}};

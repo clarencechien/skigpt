@@ -217,3 +217,14 @@ AI 沒有獨立 WebSocket，因此不顯示虛假的 ping，標示「AI · 同 D
 - 新增 `tests/security-medium.mjs`；24 個遊戲單元測試、room-protocol、host-routing、security-high、security-medium 與 standalone build 通過。
 
 設定依據：[workers.dev 路由](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/)、[Preview URLs](https://developers.cloudflare.com/workers/versions-and-deployments/preview-urls/)。
+
+
+## v0.6.4：手機觸控與效能診斷
+
+- 遊戲操作區加入 Safari 的 `-webkit-user-select: none`、停用長按 callout／context menu，並在加速、左右、後空翻 pointerdown 阻止預設選取行為。左右鍵保留 pointer capture 與取消／放開清理；加速與後空翻保留鍵盤觸發。表單輸入不受限制。
+- 低畫質 pixel ratio 上限由 1.5 降為 1；高 DPI 裝置的畫布像素最多減少約 56%。樹林 instance 矩陣只在跨過 38m 區段時更新，避免每幀重算。中／高畫質設定維持原值。
+- 比賽操作列新增 FPS、ping、同步資料 age（距離收到上一筆狀態的本機毫秒數）。ping 使用既有心跳 RTT，不新增網路探測；單人練習顯示本機運算。
+- 判讀：單人也低 FPS，優先懷疑裝置繪圖／主執行緒負擔或發熱；FPS 正常但多人資料 age 經常跳到數百 ms，優先檢查網路、伺服器排程或瀏覽器訊息處理。資料 age 不是單程網路延遲，ping 也不是即時每幀測量，不能只憑單一數值定案。目前位置外推上限 120ms，超過會暫停推算。
+- 驗證：24 項單元測試與 standalone build 通過。執行環境未安裝 Playwright 瀏覽器，沒有宣稱 iOS／Android 實機或瀏覽器互動驗收已通過。部署後請用手機測試連點、雙手同時加速／轉向、長按／滑出按鈕，以及低畫質單人與多人比較。
+
+參考：[MDN user-select](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/user-select)、[Three.js 高 DPI 畫布成本](https://threejs.org/manual/en/responsive.html)。
