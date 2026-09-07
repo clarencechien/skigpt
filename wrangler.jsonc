@@ -31,5 +31,23 @@
   "workers_dev": true,
   "observability": {
     "enabled": true
-  }
+  },
+  "ratelimits": [
+    {
+      "name": "JOIN_LIMIT",
+      "namespace_id": "610201",
+      "simple": {
+        "limit": 120,
+        "period": 60
+      }
+    },
+    {
+      "name": "HOST_CREATE_LIMIT",
+      "namespace_id": "610202",
+      "simple": {
+        "limit": 6,
+        "period": 60
+      }
+    }
+  ]
 }

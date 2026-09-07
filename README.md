@@ -194,3 +194,14 @@ AI 沒有獨立 WebSocket，因此不顯示虛假的 ping，標示「AI · 同 D
 造型研究參考：[低面數滑雪者輪廓](https://sketchfab.com/3d-models/skier-low-poly-character-13ae2a85b3af43ab8b1e984c8f8c87e2)、[滑雪服與装备的角色分色](https://3dexport.com/3dmodel-skier-223295.htm)。僅作造型方向參考，未使用其模型或貼圖。
 
 驗證：已檢視實際幾何的正面、背面斜角與追逐角度離線投影；建置與既有視野測試通過。離線投影不是 WebGL 真機畫面，掃碼距離仍需現場測試。
+
+## v0.6.2 安全修補
+
+完整 [安全審查與修補紀錄](security_best_practices_report.md) 已加入 repo。優先修復 High 01／02：重連不能推延清理時間、到期入口拒絕服務、公開握手與 WebSocket 分層限流。限流設定隨 Wrangler 自動部署，不需新增 Access 參數。
+
+- `JOIN_LIMIT`：每 IP／機房 120 次握手／分鐘，保留 16 人共用 Wi-Fi 餘裕。
+- `HOST_CREATE_LIMIT`：每 Access subject／機房 6 次開房／分鐘。
+- 每房間加入：2 次／秒、burst 32；同一玩家重連間隔至少 2 秒。
+- 每 socket：40 訊息／秒、burst 80；每房 800／秒、burst 1600；最多 128 個待處理訊息。正常客戶端約 20Hz。
+- 過量回 429；遺漏 rate-limit binding 回 503；WebSocket 違規以 1008 關閉，其他玩家繼續。
+- 中風險待辦（離線名額、替代入口、工具依賴）請見報告。此版本不變更 workers.dev 或 WAF 規則。
