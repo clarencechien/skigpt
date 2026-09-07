@@ -3,6 +3,13 @@
 日期：2026-09-07。審查基準：[clarencechien/skigpt @ 5c4d93e](https://github.com/clarencechien/skigpt/tree/5c4d93e9346bf1ec26dbbe52cb5c8821c34012aa)。
 
 
+## v0.6.3 修補狀態（2026-09-07，最新）
+
+- **04 離線名額：已修補並通過本機回歸**。等待室離線保留 30 秒，alarm 與加入路徑回收並持久化；AI 排除於 16 真人上限之外。重連取消回收、舊 close 不影響新 socket。心跳失聯於 stale 判定後開始保留期。賽中／結果資料保留，reset 回等待室套用相同政策。
+- **05 替代入口：程式與部署設定已修補，線上生效待確認**。Wrangler 停用 workers.dev 與 Preview URLs；Worker 對 `.workers.dev` 後端請求在任何 binding 前回 403。既有 Dashboard Custom Domain 不在此次修改範圍。靜態資產可能由 assets 直接服務，因此全站入口停用仍以部署設定生效為準。
+- 驗證：24 個遊戲單元測試、room-protocol、host-routing、security-high、security-medium 與 standalone build 全部通過。新測試涵蓋名額保留／回收、滿房加入、AI 容量、心跳失聯、持久化、重連舊 close、賽中成績、reset，以及兩類替代 hostname 在 binding 前拒絕。
+- 尚未驗證 Cloudflare 線上部署及帳戶 Access／WAF 設定；06 開發依賴更新及先前 runtime／安全標頭待辦仍未包含於此次修補。下方 v0.6.2 與 v0.6.1 為歷史紀錄。
+
 ## v0.6.2 修補狀態（2026-09-07）
 
 本檔保留下方 v0.6.1 的原始審查證據；以下為目前程式狀態，原始行號對應 v0.6.1 commit。
@@ -24,7 +31,7 @@ Access 對開房／主控的保護有實際作用，本次未找到偽造 JWT �
 
 最優先修補：讓到期時間成為每個入口都必須遵守的硬限制、避免重連延後既有清理 alarm；補上 WebSocket 訊息與握手限流。這些是應用程式責任，不能只靠 WAF。
 
-原始審查當時尚未套用修補；目前狀態請以上方 v0.6.2 修補紀錄為準。
+原始審查當時尚未套用修補；目前狀態請以上方最新修補紀錄為準。
 
 ## 方法與範圍
 

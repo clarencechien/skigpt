@@ -21,7 +21,7 @@ Cloudflare Builds 會依 package-lock.json 安裝依賴。`npm run build` 產生
 
 這是完整 Worker 部署，請使用 **Workers 的 Git 整合**。若介面一直要求 Pages 的「輸出目錄」，請回到建立 Worker 的流程。
 
-首次成功後，開啟 Dashboard 顯示的 workers.dev HTTPS 網址：
+首次成功後，請在 Dashboard → Worker → Settings → Domains & Routes 綁定正式 Custom Domain，並開啟該 HTTPS 網址（v0.6.3 已停用 workers.dev 與 Preview URLs）：
 
 1. 完成下方 Cloudflare Access 設定，筆電按「Access 登入開房」，通過驗證後開房。
 2. 手機掃 QR Code，輸入暱稱並授權體感。
@@ -205,3 +205,15 @@ AI 沒有獨立 WebSocket，因此不顯示虛假的 ping，標示「AI · 同 D
 - 每 socket：40 訊息／秒、burst 80；每房 800／秒、burst 1600；最多 128 個待處理訊息。正常客戶端約 20Hz。
 - 過量回 429；遺漏 rate-limit binding 回 503；WebSocket 違規以 1008 關閉，其他玩家繼續。
 - 中風險待辦（離線名額、替代入口、工具依賴）請見報告。此版本不變更 workers.dev 或 WAF 規則。
+
+
+## v0.6.3：離線名額與替代入口修補
+
+- 等待室玩家斷線後保留 30 秒供原 resume token 重連；逾時由 alarm 或下次加入請求回收，並寫入 storage。心跳失聯先經既有 45 秒 stale 判定，再開始保留期（alarm 排程可能有延遲）。重連成功取消回收，舊 socket 的 close 不會移除新連線。
+- 16 人限制只計真人；AI 不占名額。賽中與結果頁保留離線玩家和成績；下一場回等待室時重新套用回收規則。
+- `workers_dev: false`、`preview_urls: false` 會隨 Wrangler 部署停用兩種入口。Worker 亦在 Access、Rate Limit、DO binding 前拒絕 `.workers.dev` 主機的後端請求。
+- 請使用 Dashboard 已綁定的正式 Custom Domain。此修補不指定猜測的正式 hostname，也不修改 Access／WAF 規則；`CF_ZONE_NAME` 仍只是診斷標籤，不能建立 DNS 或路由。
+- 部署完成後，在 Domains & Routes 確認 workers.dev 與 Preview URLs 皆 Disabled；用正式網址測試開房與加入，再確認舊 workers.dev／版本 Preview 網址無法提供遊戲 API。尚未從本機驗證 Cloudflare 帳戶的實際部署狀態。
+- 新增 `tests/security-medium.mjs`；24 個遊戲單元測試、room-protocol、host-routing、security-high、security-medium 與 standalone build 通過。
+
+設定依據：[workers.dev 路由](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/)、[Preview URLs](https://developers.cloudflare.com/workers/versions-and-deployments/preview-urls/)。
