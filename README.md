@@ -247,3 +247,11 @@ AI 沒有獨立 WebSocket，因此不顯示虛假的 ping，標示「AI · 同 D
 - 詳細威脅範圍、票券限制與未修待辦請見 `security_best_practices_report.md`。
 
 參考：[Cloudflare static headers](https://developers.cloudflare.com/workers/static-assets/headers/)。
+
+
+## v0.6.7：簡化對手名稱與淡出
+
+- 每個畫面內的對手頭上顯示名字（含 AI 標記），移除最多三個標籤與前方 4m 才出現的條件；起跑也能辨識五位對手。名字保留最多 16 字，遠方仍限制 140m 與畫面邊界以避免無限堆疊。
+- 角色與 label 共用距離透明度，使用相機與角色的水平距離，避免同位置時因頭部高度而仍然不透明。3m 內隱藏，3–12m 平滑恢復不透明；极低透明度整體隱藏以避免多個 mesh 疊加。名字同步淡出。
+- 移除玩家近身接觸火花，保留樹石撞擊與加速特效。未加入碰撞減速、跟滑加速、追趕或其他競速規則。
+- opponent-view 測試與 standalone build 通過；重跑六個手機尺寸的真實 renderer + mock 快照，目視確認起跑五個名字、近距離角色／名字同步淡化，多人重疊不再有大頭盔與火花遮擋。這不是手機效能或線上連線壓測。
