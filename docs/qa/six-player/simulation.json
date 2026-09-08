@@ -1,0 +1,239 @@
+{
+  "scope": "Six deterministic scripted racers; same real physics, seed 7 ramps only; no obstacle collisions, no player collisions, no network. Scripted skill profiles are illustrative, not measured human behavior.",
+  "cases": [
+    {
+      "scenario": "Equal ramp success",
+      "nearPeerWithin45mFraction": 1,
+      "finishSeconds": [
+        43.8,
+        43.8,
+        43.8,
+        43.8,
+        43.8,
+        43.8
+      ],
+      "impacts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "samples": [
+        {
+          "seconds": 10,
+          "positions": [
+            756,
+            756,
+            756,
+            756,
+            756,
+            756
+          ],
+          "tiers": [
+            6,
+            6,
+            6,
+            6,
+            6,
+            6
+          ]
+        },
+        {
+          "seconds": 20,
+          "positions": [
+            2488,
+            2488,
+            2488,
+            2488,
+            2488,
+            2488
+          ],
+          "tiers": [
+            9,
+            9,
+            9,
+            9,
+            9,
+            9
+          ]
+        },
+        {
+          "seconds": 30,
+          "positions": [
+            4468,
+            4468,
+            4468,
+            4468,
+            4468,
+            4468
+          ],
+          "tiers": [
+            9,
+            9,
+            9,
+            9,
+            9,
+            9
+          ]
+        },
+        {
+          "seconds": 40,
+          "positions": [
+            6448,
+            6448,
+            6448,
+            6448,
+            6448,
+            6448
+          ],
+          "tiers": [
+            9,
+            9,
+            9,
+            9,
+            9,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "Different ramp success",
+      "nearPeerWithin45mFraction": 0.23452768729641693,
+      "finishSeconds": [
+        43.8,
+        46.2,
+        49.8,
+        53.4,
+        57,
+        60.6
+      ],
+      "impacts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "samples": [
+        {
+          "seconds": 10,
+          "positions": [
+            756,
+            633,
+            586,
+            576,
+            576,
+            576
+          ],
+          "tiers": [
+            6,
+            4,
+            4,
+            3,
+            3,
+            3
+          ]
+        },
+        {
+          "seconds": 20,
+          "positions": [
+            2488,
+            2020,
+            1613,
+            1452,
+            1369,
+            1322
+          ],
+          "tiers": [
+            9,
+            9,
+            6,
+            5,
+            4,
+            4
+          ]
+        },
+        {
+          "seconds": 30,
+          "positions": [
+            4468,
+            4000,
+            3285,
+            2731,
+            2444,
+            2289
+          ],
+          "tiers": [
+            9,
+            9,
+            9,
+            7,
+            6,
+            5
+          ]
+        },
+        {
+          "seconds": 40,
+          "positions": [
+            6448,
+            5980,
+            5265,
+            4552,
+            3908,
+            3521
+          ],
+          "tiers": [
+            9,
+            9,
+            9,
+            9,
+            8,
+            6
+          ]
+        },
+        {
+          "seconds": 50,
+          "positions": [
+            7200,
+            7200,
+            7200,
+            6532,
+            5817,
+            5131
+          ],
+          "tiers": [
+            9,
+            9,
+            9,
+            9,
+            9,
+            8
+          ]
+        },
+        {
+          "seconds": 60,
+          "positions": [
+            7200,
+            7200,
+            7200,
+            7200,
+            7200,
+            7085
+          ],
+          "tiers": [
+            9,
+            9,
+            9,
+            9,
+            9,
+            9
+          ]
+        }
+      ]
+    }
+  ]
+}

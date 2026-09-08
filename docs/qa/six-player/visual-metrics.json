@@ -1,0 +1,182 @@
+{
+  "scope": "Six isolated 390x844 browser pages using real frontend/WebGL renderer, injected authoritative snapshots, mocked transport. Software GPU FPS is not phone performance.",
+  "errors": [],
+  "metrics": [
+    {
+      "scenario": "start",
+      "view": "p0",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "start",
+      "view": "p1",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "start",
+      "view": "p2",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "start",
+      "view": "p3",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "start",
+      "view": "p4",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "start",
+      "view": "p5",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "pack",
+      "view": "p0",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "pack",
+      "view": "p1",
+      "labels": [
+        "小綠 · 25m"
+      ],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "pack",
+      "view": "p2",
+      "labels": [
+        "莓莓 · 7m"
+      ],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "pack",
+      "view": "p3",
+      "labels": [
+        "小綠 · 31m"
+      ],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "pack",
+      "view": "p4",
+      "labels": [
+        "你 · 15m"
+      ],
+      "radarDots": 4,
+      "webgl": true
+    },
+    {
+      "scenario": "pack",
+      "view": "p5",
+      "labels": [],
+      "radarDots": 4,
+      "webgl": true
+    },
+    {
+      "scenario": "overlap",
+      "view": "p0",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "overlap",
+      "view": "p1",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "overlap",
+      "view": "p2",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "overlap",
+      "view": "p3",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "overlap",
+      "view": "p4",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "overlap",
+      "view": "p5",
+      "labels": [],
+      "radarDots": 5,
+      "webgl": true
+    },
+    {
+      "scenario": "spread",
+      "view": "p0",
+      "labels": [],
+      "radarDots": 0,
+      "webgl": true
+    },
+    {
+      "scenario": "spread",
+      "view": "p1",
+      "labels": [],
+      "radarDots": 0,
+      "webgl": true
+    },
+    {
+      "scenario": "spread",
+      "view": "p2",
+      "labels": [],
+      "radarDots": 0,
+      "webgl": true
+    },
+    {
+      "scenario": "spread",
+      "view": "p3",
+      "labels": [],
+      "radarDots": 0,
+      "webgl": true
+    },
+    {
+      "scenario": "spread",
+      "view": "p4",
+      "labels": [],
+      "radarDots": 0,
+      "webgl": true
+    },
+    {
+      "scenario": "spread",
+      "view": "p5",
+      "labels": [],
+      "radarDots": 0,
+      "webgl": true
+    }
+  ]
+}
